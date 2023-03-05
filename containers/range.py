@@ -1,3 +1,5 @@
+
+
 def range(a, b=None, c=None):
     if b is None and c is None:
         result = 0

@@ -39,7 +39,6 @@ def fib(n):
     return f2
 
 
-
 class Fib:
     '''
     This class represents all the fibonacci numbers,
@@ -86,7 +85,7 @@ class FibIter:
         if self.n is None:
             pass
         elif self.i >= self.n:
-           raise StopIteration
+            raise StopIteration
         self.i += 1
         value = self.result
         self.result += self.previous

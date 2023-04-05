@@ -1,88 +1,103 @@
-from containers.BinaryTree import BinaryTree, Node
-
-
-class BST(BinaryTree):
+class Heap(BinaryTree):
 
     def __init__(self, xs=None):
         super().__init__()
+        self.num_nodes = 0
         if xs:
             self.insert_list(xs)
 
     def __repr__(self):
         return type(self).__name__ + '(' + str(self.to_list('inorder')) + ')'
 
-    def __eq__(self, t2):
-        sorted_list1 = self.to_list('inorder')
-        sorted_list2 = t2.to_list('inorder')
-        return sorted_list1 == sorted_list2
-
-    def is_bst_satisfied(self):
+    def is_heap_satisfied(self):
         if self.root:
-            return BST._is_bst_satisfied(self.root)
+            return Heap._is_heap_satisfied(self.root)
         return True
 
     @staticmethod
-    def _is_bst_satisfied(node):
+    def _is_heap_satisfied(node):
         ret = True
         if node.left:
-            if node.value >= BST._find_largest(node.left):
-                ret &= BST._is_bst_satisfied(node.left)
-            else:
-                ret = False
+            ret &= node.value <= node.left.value
+            ret &= Heap._is_heap_satisfied(node.left)
         if node.right:
-            if node.value <= BST._find_smallest(node.right):
-                ret &= BST._is_bst_satisfied(node.right)
-            else:
-                ret = False
+            ret &= node.value <= node.right.value
+            ret &= Heap._is_heap_satisfied(node.right)
         return ret
 
     def insert(self, value):
-        if self.root:
-            BST._insert(self.root, value)
-        else:
+        self.num_nodes += 1
+        binary_str = str(bin(self.num_nodes))[3:]
+
+        if self.root is None:
             self.root = Node(value)
+        else:
+            Heap._insert(self.root, value, binary_str)
 
     @staticmethod
-    def _insert(node, value):
-        if value <= node.value:
-            if node.left:
-                BST._insert(node.left, value)
-            else:
+    def _insert(node, value, binary_str):
+        if not binary_str:
+            node = Node(value)
+        elif binary_str[0] == '0':
+            if len(binary_str) == 1:
                 node.left = Node(value)
-        if value >= node.value:
-            if node.right:
-                BST._insert(node.right, value)
             else:
+                Heap._insert(node.left, value, binary_str[1:])
+            if node.value > node.left.value:
+                node.value, node.left.value = node.left.value, node.value
+        elif binary_str[0] == '1':
+            if len(binary_str) == 1:
                 node.right = Node(value)
+            else:
+                Heap._insert(node.right, value, binary_str[1:])
+            if node.value > node.right.value:
+                node.value, node.right.value = node.right.value, node.value
 
     def insert_list(self, xs):
         for x in xs:
-            if self.root:
-                BST._insert(self.root, x)
-            else:
-                self.root = Node(x)
+            self.insert(x)
 
-    def __contains__(self, value):
-        return self.find(value)
+    def find_smallest(self):
+        return self.root.value
 
-    def find(self, value):
-        if not self.root:
-            return None
-        else:
-            return BST._find(value, self.root)
+    def remove_min(self):
+        binary_str = str(bin(self.num_nodes))[3:]
+        bottom = Heap._remove_bottom(self.root, binary_str)
+        self.num_nodes -= 1
+        self.root.value = bottom
+        Heap._trickle_down(self.root)
 
     @staticmethod
-    def _find(value, node):
-        if value == node.value:
-            return True
-        if value < node.value:
-            if node.left:
-                return BST._find(value, node.left)
-            else:
-                return False
-        if value > node.value:
-            if node.right:
-                return BST._find(value, node.right)
-            else:
-                return False
+    def _remove_bottom(node, binary_str):
+        if node.left:
+            if binary_str[0] == '0':
+                if len(binary_str) == 1:
+                    bottom = node.left.value
+                    node.left = None
+                else:
+                    bottom = Heap._remove_bottom(node.left, binary_str[1:])
+            elif binary_str[0] == '1':
+                if len(binary_str) == 1:
+                    bottom = node.right.value
+                    node.right = None
+                else:
+                    bottom = Heap._remove_bottom(node.right, binary_str[1:])
+        elif node.right:
+            if binary_str[0] == '1':
+                if len(binary_str) == 1:
+                    bottom = node.right.value
+                    node.right = None
+                else:
+                    bottom = Heap._remove_bottom(node.right, binary_str[1:])
+        return node.value if not node.left and not node.right else bottom
+
+    @staticmethod
+    def _trickle_down(node):
+        if node.left and node.right:
+            if node.left.value < node.right.value:
+                if node.left.value < node.value:
+                    node.value, node.left.value = node.left.value, node.value
+                    Heap._trickle_down(node.left)
+            elif node.right.value < node.value:
+                node.value, node.right.value = node.right
 

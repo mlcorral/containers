@@ -1,5 +1,7 @@
-class Heap(BinaryTree):
+from containers.BinaryTree import BinaryTree, Node
 
+
+class Heap(BinaryTree):
     def __init__(self, xs=None):
         super().__init__()
         self.num_nodes = 0
@@ -26,6 +28,8 @@ class Heap(BinaryTree):
         return ret
 
     def insert(self, value):
+        '''
+        '''
         self.num_nodes += 1
         binary_str = str(bin(self.num_nodes))[3:]
 
@@ -76,28 +80,24 @@ class Heap(BinaryTree):
                     node.left = None
                 else:
                     bottom = Heap._remove_bottom(node.left, binary_str[1:])
-            elif binary_str[0] == '1':
-                if len(binary_str) == 1:
-                    bottom = node.right.value
-                    node.right = None
-                else:
-                    bottom = Heap._remove_bottom(node.right, binary_str[1:])
-        elif node.right:
             if binary_str[0] == '1':
                 if len(binary_str) == 1:
                     bottom = node.right.value
                     node.right = None
                 else:
                     bottom = Heap._remove_bottom(node.right, binary_str[1:])
-        return node.value if not node.left and not node.right else bottom
+            return bottom
 
     @staticmethod
     def _trickle_down(node):
         if node.left and node.right:
-            if node.left.value < node.right.value:
-                if node.left.value < node.value:
-                    node.value, node.left.value = node.left.value, node.value
-                    Heap._trickle_down(node.left)
-            elif node.right.value < node.value:
-                node.value, node.right.value = node.right
-
+            if node.value > node.left.value < node.right.value:
+                node.value, node.left.value = node.left.value, node.value
+                Heap._trickle_down(node.left)
+            if node.value > node.right.value < node.left.value:
+                node.value, node.right.value = node.right.value, node.value
+                Heap._trickle_down(node.right)
+        if node.left:
+            if node.value > node.left.value:
+                node.value, node.left.value = node.left.value, node.value
+                Heap._trickle_down(node.left)
